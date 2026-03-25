@@ -262,6 +262,8 @@ batman@31c33fffb74b:~/workspace$ opencode
 
 Skjermbildet under viser det Jimmy nå ser på skjermen sin - AI'en er klar for action, og Jimmy kan sette i gang med en fyldig spørring, med nok kontekst, og la AI'en koke!
 
+![Skjermdump av OpenCode](./skjermdump_opencode.png "Skjermdump OpenCode")
+
 ## Safety first
 
 That's it. En veldig lik flyt som mange allerede er kjent med og bruker, men samtidig så veldig annerledes også. Forskjellen _is in the details_. I stedet for at man _by default_ kjører AI-verktøy som seg selv, med potensielt tilgang til altfor mye, gir denne fremgangsmåten deg adskillig mer trygghet og sikkerhet uten at det nødvendigvis koster deg fart og flyt.
