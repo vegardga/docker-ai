@@ -4,11 +4,11 @@ Det er ikke lett å holde hodet kaldt når verden rundt deg stormer. Dette tror 
 
 ## Jimmy hopper på AI-bølgen
 
-Si hei til Jimmy! Jimmy er en fiktiv EDB-konsulent, med mange års erfaring innen IT-bransjen. Jimmy har hatt datamaskinen sin i flere år nå, og har brukt den flittig i både jobb og på privaten. På datamaskinen sin har han familiealbum fra tidligere sommer- og juleferier. Hemmeligheter og API-nøkler i diverse konfigurasjonsfiler her og der. Arkiverte konfidensielle prosjekter fra tidligere oppdrag. Passordhåndteringsprogramvare, med tilhørede terminal-utvidelse. Kort fortalt kan man vel si at Jimmy har brukt og satt opp datamaskinen sin slik mange av oss også gjør.
+Si hei til Jimmy! Jimmy er en fiktiv EDB-konsulent, med mange års erfaring innen IT-bransjen. Jimmy har hatt datamaskinen sin i flere år nå, og har brukt den flittig i både jobb og på privaten. På datamaskinen sin har han familiealbum fra tidligere sommer- og juleferier. Hemmeligheter og API-nøkler i diverse konfigurasjonsfiler her og der. Arkiverte konfidensielle prosjekter fra tidligere oppdrag. Passordhåndteringsprogramvare, med tilhørende terminal-utvidelse. Kort fortalt kan man vel si at Jimmy har brukt og satt opp datamaskinen sin slik mange av oss også gjør.
 
 Jimmy er klar for nye eventyr, og nå er det AI som står for tur. Sammen med seg har han nyutdannede og fiktive Dory. Hun kommer rett fra studie, og har bare akkurat rukket å sette opp datamaskinen sin før Jimmy spør om hun ville være med å undersøke AI-verktøy. Det vil hun selvsagt. Hun er jo klar for det, hun har jo tross alt brukt mye AI under studietiden sin. I tillegg er hun akkurat ferdig med å konfigurere og sette opp mye av det hun så på som nødvendig i hverdagen, blant annet Github-tokens og 1Password-credentials i konfigurasjonsfiler, for å unngå å logge på disse tjenestene hele tiden.
 
-Jimmy og Dory er klar for AI. I følge kollegaene sine er det bare å sjekke ut siste skrik av AI-modeller og -leverandører, og følge installasjonsinstruksjonene. "Bare last ned og installer, og så er du i gang!" forteller ivrige kollegaer og resten av Internett. Det høres jo lett ut. De søker litt rundt og finner fort OpenCode, med ufattelige 130k stjerner på Github! Dette må jo være bra og trygt siden så mange anbefaler og liker det. Installasjonen ser også rimelig rett fram ut:
+Jimmy og Dory er klar for AI. Ifølge kollegaene sine er det bare å sjekke ut siste skrik av AI-modeller og -leverandører, og følge installasjonsinstruksjonene. "Bare last ned og installer, og så er du i gang!" forteller ivrige kollegaer og resten av Internett. Det høres jo lett ut. De søker litt rundt og finner fort OpenCode, med ufattelige 130k stjerner på Github! Dette må jo være bra og trygt siden så mange anbefaler og liker det. Installasjonen ser også rimelig rett fram ut:
 
 ```console
 $ curl -fsSL https://opencode.ai/install | bash
@@ -71,7 +71,7 @@ $ opencode
 
 ## Høres det kjent ut?
 
-Jeg tror ikke eksempelet og historien om Jimmy og Dory er "far-fetched" og så veldig uvanlig. Okei da, det er kanskje ikke så vanlig å ha _så private_ filer på datamaskinen som man bruker på arbeid, men resten av det som skjer tror jeg mange har gjort. Man finner en nettside med installasjonsinstruksjoner, copy-paster en eller annen kommando som tilsynelatende laster ned og installerer et eller annet, og deretter starter man programmet. Da er man liksom i gang.
+Jeg tror ikke eksempelet og historien om Jimmy og Dory er "far-fetched" og så veldig uvanlig. Ok da, det er kanskje ikke så vanlig å ha _så private_ filer på datamaskinen som man bruker på arbeid, men resten av det som skjer tror jeg mange har gjort. Man finner en nettside med installasjonsinstruksjoner, copy-paster en eller annen kommando som tilsynelatende laster ned og installerer et eller annet, og deretter starter man programmet. Da er man liksom i gang.
 
 Men, til hvilken kost? Og hva er det man egentlig godtar og takker ja til, ved installasjon og bruk av slike verktøy? Det er noe av det som bekymrer meg.
 
@@ -129,7 +129,7 @@ Hvis du nå er en som tenker "hvorfor Docker, og ikke f.eks. Podman?". Vel, godt
 
 Anyway, hvis du ikke allerede har installert Docker (eller Podman) må du først gjøre det. Følg instruksjonene på nettsidene til f.eks. [Docker - Get Started](https://www.docker.com/get-started/), eller be din allerede-installerte-AI-som-enn-så-lenge-kjører-som-deg-med-dine-rettigheter-og-tilganger-venn om hjelp 🤷‍♂️ 😂
 
-Det neste vi trenger er en `Dockerfile` med beskrivelse og oppsett av det vi trenger for å putte AI'en i en lukket sandkasse og isolert miljø. Nedenfor finner du et utkast du kan bruke som Dockerfile. Btw, alt dette finner du også på Github --> [https://github.com/vegardga/docker-ai](https://github.com/vegardga/docker-ai)
+Det neste vi trenger er en `Dockerfile` med beskrivelse og oppsett av det vi trenger for å putte AI'en i en lukket sandkasse og isolert miljø. Nedenfor finner du et utkast du kan bruke som Dockerfile. By the way, alt dette finner du også på Github --> [https://github.com/vegardga/docker-ai](https://github.com/vegardga/docker-ai)
 
 ```yaml
 # Generisk Dockerfile for å kjøre AI-verktøy i isolerte miljø
@@ -174,11 +174,11 @@ Dette er som sagt et _utgangspunkt_, og ikke vær redd for å endre dette! Bytt 
 Resten av konfigurasjon og filer som AI'en trenger for å fungere kan du "mounte inn" når du lager Docker-containere. Her ble det litt mange fremmedord kanskje, så la oss se på et eksempel.
 
 Eksempel-scenario:
-- Jimmy har klonet ned et git-repo som han aktivt jobber med lokalt på maskinen sin. Jimmy vil gjerne kjøre tre agenter i parallell, samtidig som han selv jobber med en fjerde oppgave. For å få dette til bruker Jimmy "git worktrees", slik at hver enkelt agent ikke går i beina på hverandre, ei heller med det Jimmy selv vil jobbe med. Hvert enkelt worktree er en kopi av kildekoden, som igjen blir til en egen container basert på imaget fra Dockerfilen beskrevet ovenfor. Jimmy gir containerne kun tilgang til sitt eget worktree og vil på den måten skjerme og gjøre alle andre filer på datamaskinen utilgjenglig for AI'en.
+- Jimmy har klonet ned et git-repo som han aktivt jobber med lokalt på maskinen sin. Jimmy vil gjerne kjøre tre agenter i parallell, samtidig som han selv jobber med en fjerde oppgave. For å få dette til bruker Jimmy "git worktrees", slik at hver enkelt agent ikke går i beina på hverandre, ei heller med det Jimmy selv vil jobbe med. Hvert enkelt worktree er en kopi av kildekoden, som igjen blir til en egen container basert på imaget fra Dockerfilen beskrevet ovenfor. Jimmy gir containerne kun tilgang til sitt eget worktree og vil på den måten skjerme og gjøre alle andre filer på datamaskinen utilgjengelig for AI'en.
 
-Hørtes dette komplisert ut? Hvis du tidligere har brukt Claude Code eller andre AI-verktøy så er det basically slik disse verktøyene fungerer. Bortsett fra det med tilgangsstyringen og hvilke filer som er tilgjengelig for AI'en da. Her begrenser vi det veldig - mens hvis du har installert og bruker slike verktøy direkte har AI'en tilgang til alt du har tilgang til (som ofte er veldig mye, gjerne alt).
+Hørtes dette komplisert ut? Hvis du tidligere har brukt Claude Code eller andre AI-verktøy så er det egentlig dette verktøyene gjør i bakgrunnen. Bortsett fra det med tilgangsstyringen og hvilke filer som er tilgjengelig for AI'en da. Her begrenser vi det veldig - mens hvis du har installert og bruker slike verktøy direkte har AI'en tilgang til alt du har tilgang til (som ofte er veldig mye, gjerne alt).
 
-Okei, pjuh, la oss ta for oss eksempelet steg for steg og se hvordan vi kan hjelpe Jimmy med denne arbeidsflyten.
+Okay, pjuh, la oss ta for oss eksempelet steg for steg og se hvordan vi kan hjelpe Jimmy med denne arbeidsflyten.
 
 ### Steg 1 - Lage et base-AI-image fra Dockerfile
 
@@ -229,7 +229,7 @@ $ NAME=feature-a; \
   base-ai
 ```
 
-Skulle Jimmy en dag lage sine egne konfigurasjonsfiler med oppsett han vil dele på tvers av alle AI-containerne, kan han enkelt utvide kommandoen med flere filer inn i sandkassen. F.eks:
+Skulle Jimmy en dag lage sine egne konfigurasjonsfiler med oppsett han vil dele på tvers av alle AI-containerne, kan han enkelt utvide kommandoen med flere filer inn i sandkassen. For eksempel:
 
 ```console
 $ NAME=feature-a; \
@@ -266,8 +266,8 @@ Skjermbildet under viser det Jimmy nå ser på skjermen sin - AI'en er klar for 
 
 ## Safety first
 
-That's it. En veldig lik flyt som mange allerede er kjent med og bruker, men samtidig så veldig annerledes også. Forskjellen _is in the details_. I stedet for at man _by default_ kjører AI-verktøy som seg selv, med potensielt tilgang til altfor mye, gir denne fremgangsmåten deg adskillig mer trygghet og sikkerhet uten at det nødvendigvis koster deg fart og flyt.
+That's it. En veldig lik flyt som mange allerede er kjent med og bruker, men samtidig så veldig annerledes også. Forskjellen _is in the details_. I stedet for at man _by default_ kjører AI-verktøy som seg selv, med potensiell tilgang til altfor mye, gir denne fremgangsmåten deg adskillig mer trygghet og sikkerhet uten at det nødvendigvis koster deg fart og flyt.
 
-Du velger selv hva du gjør videre - men jeg ber deg tenke deg nøye om rundt hva du installerer og hva du gir tilgang til. Det er som sagt kraftige og ikke-deterministiske verktøy du tar i bruk - og med det følger det stort ansvar i et hav av muligheter. Ha det gøy, lek og lær, men bruk hodet!
+Du velger selv hva du gjør videre - men jeg ber deg tenke deg nøye om rundt hva du installerer, og hva du gir tilgang til. Det er som sagt kraftige og ikke-deterministiske verktøy du tar i bruk - og med det følger det stort ansvar i et hav av muligheter. Ha det gøy, lek og lær, men bruk hodet!
 
 "With great power comes great responsibility", var det noen som sa en gang. Ikke glem det siste der.
