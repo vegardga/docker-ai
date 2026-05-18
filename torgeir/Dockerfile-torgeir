@@ -1,0 +1,112 @@
+# isolated ai environments
+# usage:
+#   podman build -t docker-ai . --no-cache
+# or
+#   docker build -t docker-ai . --no-cache
+#
+# testet on macos with docker running as root
+# testet on nixos with rootless podman
+#
+# Shouout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
+FROM ubuntu:24.04
+
+
+# no prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# c-x e in opencode
+ENV EDITOR=nvim
+ENV VISUAL=nvim
+ENV GIT_EDITOR=nvim
+
+# upgrade and install
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    btop \
+    curl \
+    fd-find \
+    git \
+    gpg \
+    jq \
+    neovim \
+    ripgrep \
+    zoxide \
+    tmux \
+    tree \
+    unzip \
+    vim \
+    wget \
+    zstd \
+    pciutils \
+    ca-certificates \
+    openjdk-17-jdk \
+    openjdk-21-jdk \
+    python3 python3-pip python3-venv \
+    locales \                       
+    && locale-gen nb_NO.UTF-8 \
+    && ln -s /usr/bin/fdfind /usr/local/bin/fd \
+    && mkdir -p /etc/apt/keyrings && \
+      curl -fsSL https://raw.githubusercontent.com/eza-community/eza/main/deb.asc \
+        | gpg --dearmor -o /etc/apt/keyrings/gierens.gpg && \
+      echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] https://deb.gierens.de stable main" \
+        > /etc/apt/sources.list.d/gierens.list && \
+    apt-get update && apt-get install -y eza \
+    && rm -rf /var/lib/apt/lists/*
+
+# java
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+# norsk
+ENV LANG=nb_NO.UTF-8
+ENV LANGUAGE=nb_NO:nb
+ENV LC_ALL=nb_NO.UTF-8
+
+# tmux, and markdown rendering in opencode
+ENV TERM=xterm-256color
+ENV COLORTERM=truecolor
+
+# ollama needs root
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# non root user
+RUN userdel -r ubuntu \
+    && useradd --uid 1000 --create-home --shell /bin/bash batman \
+    && groupadd -r render \
+    && usermod -aG video,render batman
+ENV PATH="/home/batman/.local/bin:$PATH"
+USER batman
+WORKDIR /home/batman
+
+# conf
+RUN git clone https://github.com/torgeir/dotfiles && \
+    ln -s dotfiles/fzfrc .fzfrc && \
+    ln -s dotfiles/zshrc .zshrc && \
+    ln -s dotfiles/vimrc .vimrc && \
+    ln -s dotfiles/inputrc .inputrc && \
+    ln -s dotfiles/tmux.conf .tmux.conf && \
+    ln -s dotfiles/gitconfig .gitconfig && \
+    echo 'source $HOME/dotfiles/source/aliases' >> /home/batman/.bashrc
+
+# batman ownership of foldlers we later mount using -v
+RUN mkdir -p /home/batman/.local/state && \
+    mkdir -p /home/batman/.local/share && \
+    mkdir -p /home/batman/.config && \
+    mkdir -p /home/batman/.config/opencode && \
+    mkdir -p /home/batman/.pi && \
+    mkdir -p /home/batman/.claude && \
+    mkdir -p /home/batman/.m2 && \
+    mkdir -p /home/batman/.gradle
+
+# ai
+RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh" | bash \
+ && export NVM_DIR=/home/batman/.nvm \
+ && . "$NVM_DIR/nvm.sh" \
+ && nvm install 24 \
+ && nvm alias default 24 \
+ && curl -fsSL https://bun.com/install | bash \
+ && curl -fsSL https://opencode.ai/install | bash \
+ && curl -fsSL https://claude.ai/install.sh | bash \
+ && CI=true curl -fsSL https://pi.dev/install.sh | sh
+
+# startup
+CMD ["/bin/bash"]

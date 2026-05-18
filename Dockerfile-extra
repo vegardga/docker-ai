@@ -1,0 +1,79 @@
+# isolated ai environments
+# usage:
+#   podman build -t docker-ai . --no-cache
+# or
+#   docker build -t docker-ai . --no-cache
+#
+# testet on macos
+FROM ubuntu:24.04
+
+# no prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# c-x e in opencode
+ENV EDITOR=nvim
+ENV VISUAL=nvim
+ENV GIT_EDITOR=nvim
+
+# upgrade and install
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    btop \
+    curl \
+    git \
+    gpg \
+    jq \
+    neovim \
+    ripgrep \
+    tmux \
+    tree \
+    unzip \
+    vim \
+    wget \
+    ca-certificates \
+    openjdk-17-jdk \
+    openjdk-21-jdk \
+    python3 python3-pip python3-venv \
+    locales \                       
+    && locale-gen nb_NO.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
+
+# java
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+# norsk
+ENV LANG=nb_NO.UTF-8
+ENV LANGUAGE=nb_NO:nb
+ENV LC_ALL=nb_NO.UTF-8
+
+# tmux, and markdown rendering in opencode
+ENV TERM=xterm-256color
+ENV COLORTERM=truecolor
+
+# non root user
+RUN userdel -r ubuntu \
+    && useradd --uid 1000 --create-home --shell /bin/bash batman \
+    && groupadd -r render \
+    && usermod -aG video,render batman
+ENV PATH="/home/batman/.local/bin:$PATH"
+USER batman
+WORKDIR /home/batman
+
+# batman ownership of folders we later mount using -v
+RUN mkdir -p /home/batman/.local/state && \
+    mkdir -p /home/batman/.local/share && \
+    mkdir -p /home/batman/.config && \
+    mkdir -p /home/batman/.config/opencode && \
+    mkdir -p /home/batman/.m2 && \
+    mkdir -p /home/batman/.gradle
+
+# ai
+RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh" | bash \
+ && export NVM_DIR=/home/batman/.nvm \
+ && . "$NVM_DIR/nvm.sh" \
+ && nvm install 24 \
+ && nvm alias default 24 \
+ && curl -fsSL https://opencode.ai/install | bash
+
+# startup
+CMD ["/bin/bash"]
