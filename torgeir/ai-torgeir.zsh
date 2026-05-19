@@ -1,12 +1,12 @@
-# usage: ai [--no-state] [name [folder]]
+# Shouout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
+# usage: ai [--no-state] [name [dir...]]
 #   ai                          - fzf pick from all docker-ai-* containers
 #   ai <name>                   - create/attach to docker-ai-<name>, mounts pwd
 #   ai <name> <dir>             - create/attach to docker-ai-<name>, mounts dir
+#   ai <name> <dir1> <dir2>...  - same, mounts multiple dirs; cwd is dir1
 #   ai --no-state <name>        - same, but omits ai state mounts
-#
-# Shouout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
 ai() {
-  # prefer docker, fall back to podman
+  # prefer podman, fall back to docker
   local runtime
   if command -v podman &>/dev/null; then
     runtime=podman
@@ -24,8 +24,17 @@ ai() {
     shift
   fi
 
-  # specified dir or current
-  local dir="${2:-$(pwd)}"
+  local name="$1"
+  shift || true  # remaining args are dirs
+
+  # collect dirs; default to pwd if none given
+  local -a dirs=()
+  for d in "$@"; do
+    [[ "$d" = /* ]] && dirs+=("$d") || dirs+=("$PWD/$d")
+  done
+  if (( ${#dirs[@]} == 0 )); then
+    dirs=("$PWD")
+  fi
 
   # --userns=keep-id maps your host uid straight through inside the container
   # (batman uid == your uid), so bind mounts just work without chown tricks.
@@ -43,12 +52,15 @@ ai() {
   # TODO nvidia
 
   # hardening defaults (drop linux capabilities and block privilege escalation)
-  # take away admin superpowers and stop apps from giving themselves more.
   local -a security_flags=(--cap-drop=ALL --security-opt=no-new-privileges)
 
-  # stuff to mount in the container
-  local -a volumes=(
-    -v "${dir}:${dir}" -w "${dir}"
+  # mount every requested dir; working dir is the first one
+  local -a volumes=(-w "${dirs[0]}")
+  for d in "${dirs[@]}"; do
+    volumes+=(-v "${d}:${d}")
+  done
+
+  volumes+=(
     -v "$HOME/.m2:/home/batman/.m2"
     -v "$HOME/.gradle:/home/batman/.gradle"
     -v "$HOME/.gitconfig.docker-ai:/home/batman/.gitconfig.private:ro"
@@ -76,14 +88,14 @@ ai() {
   fi
 
   # named container: create or attach
-  if [[ -n "$1" ]]; then
-    local container="docker-ai-$1"
+  if [[ -n "$name" ]]; then
+    local container="docker-ai-$name"
     if $runtime ps --format '{{.Names}}' | grep -qx "$container"; then
       $runtime exec -it "$container" tmux attach
     elif $runtime ps -a --format '{{.Names}}' | grep -qx "$container"; then
       $runtime start "$container" && $runtime exec -it "$container" tmux attach
     else
-      echo "Starting $container in $dir ($runtime)"
+      echo "Starting $container mounting: ${dirs[*]} ($runtime)"
       $runtime run -dit --name "$container" "${userns_flags[@]}" "${gpu_flags[@]}" "${security_flags[@]}" "${volumes[@]}" docker-ai bash -c "exec tmux"
       sleep 0.5
       $runtime exec -it "$container" tmux attach

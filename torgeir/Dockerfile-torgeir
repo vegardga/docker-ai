@@ -1,3 +1,4 @@
+# Shouout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
 # isolated ai environments
 # usage:
 #   podman build -t docker-ai . --no-cache
@@ -6,8 +7,6 @@
 #
 # testet on macos with docker running as root
 # testet on nixos with rootless podman
-#
-# Shouout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
 FROM ubuntu:24.04
 
 
@@ -66,7 +65,7 @@ ENV TERM=xterm-256color
 ENV COLORTERM=truecolor
 
 # ollama needs root
-RUN curl -fsSL https://ollama.com/install.sh | sh
+#RUN curl -fsSL https://ollama.com/install.sh | sh
 
 # non root user
 RUN userdel -r ubuntu \
@@ -104,9 +103,12 @@ RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh"
  && nvm install 24 \
  && nvm alias default 24 \
  && curl -fsSL https://bun.com/install | bash \
- && curl -fsSL https://opencode.ai/install | bash \
- && curl -fsSL https://claude.ai/install.sh | bash \
- && CI=true curl -fsSL https://pi.dev/install.sh | sh
+ && curl -fsSL https://opencode.ai/install | bash 
+ 
+ #&& curl -fsSL https://claude.ai/install.sh | bash \
+ #&& CI=true curl -fsSL https://pi.dev/install.sh | sh \ 
+ #&& npm install -g @github/copilot
+ # last line must not have \
 
 # startup
 CMD ["/bin/bash"]
