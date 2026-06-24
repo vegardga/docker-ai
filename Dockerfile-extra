@@ -3,8 +3,6 @@
 #   podman build -t docker-ai . --no-cache
 # or
 #   docker build -t docker-ai . --no-cache
-#
-# testet on macos
 FROM ubuntu:24.04
 
 # no prompts during installation
@@ -73,6 +71,7 @@ RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh"
  && . "$NVM_DIR/nvm.sh" \
  && nvm install 24 \
  && nvm alias default 24 \
+ && curl -fsSL https://bun.com/install | bash \
  && curl -fsSL https://opencode.ai/install | bash
 
 # startup
