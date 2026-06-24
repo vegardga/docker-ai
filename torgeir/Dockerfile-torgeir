@@ -1,4 +1,4 @@
-# Shouout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
+# Shoutout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
 # isolated ai environments
 # usage:
 #   podman build -t docker-ai . --no-cache

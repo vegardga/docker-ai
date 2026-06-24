@@ -1,10 +1,12 @@
-# Shouout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
+# Shoutout to Torgeir - https://gist.github.com/torgeir/dbe931351d91644f295ca8a296b8e4fb
 # usage: ai [--no-state] [name [dir...]]
 #   ai                          - fzf pick from all docker-ai-* containers
 #   ai <name>                   - create/attach to docker-ai-<name>, mounts pwd
 #   ai <name> <dir>             - create/attach to docker-ai-<name>, mounts dir
 #   ai <name> <dir1> <dir2>...  - same, mounts multiple dirs; cwd is dir1
 #   ai --no-state <name>        - same, but omits ai state mounts
+#   ai --no-gradle <name>       - same, but omits gradle state mounts
+#   ai -e VAR <name>            - same, expose environment variable VAR to the container
 ai() {
   # prefer podman, fall back to docker
   local runtime
@@ -17,15 +19,23 @@ ai() {
     return 1
   fi
 
-  # parse flag
-  local no_state=0
-  if [[ "$1" == "--no-state" ]]; then
-    no_state=1
-    shift
-  fi
+  # parse flags
+  local no_state=0 no_gradle=0
+  local -a env_flags=()
 
-  local name="$1"
-  shift || true  # remaining args are dirs
+  # parse flags
+  while [[ "${1:-}" == --* || "${1:-}" == -e ]]; do
+    case "$1" in
+      --no-state)  no_state=1;  shift ;;
+      --no-gradle) no_gradle=1; shift ;;
+      -e|--env)    env_flags+=(-e "$2"); shift 2 ;;
+      --env=*)     env_flags+=(-e "${1#--env=}"); shift ;;
+      *)           break ;;
+    esac
+  done
+
+  local name="${1//[^a-z0-9_-]/-}"
+  shift 2>/dev/null || true  # remaining args are dirs
 
   # collect dirs; default to pwd if none given
   local -a dirs=()
@@ -55,16 +65,21 @@ ai() {
   local -a security_flags=(--cap-drop=ALL --security-opt=no-new-privileges)
 
   # mount every requested dir; working dir is the first one
-  local -a volumes=(-w "${dirs[0]}")
+  local -a volumes=(-w "${dirs[1]}")
   for d in "${dirs[@]}"; do
     volumes+=(-v "${d}:${d}")
   done
 
   volumes+=(
     -v "$HOME/.m2:/home/batman/.m2"
-    -v "$HOME/.gradle:/home/batman/.gradle"
     -v "$HOME/.gitconfig.docker-ai:/home/batman/.gitconfig.private:ro"
   )
+
+  if (( !no_gradle )); then
+    volumes+=(
+      -v "$HOME/.gradle:/home/batman/.gradle"
+    )
+  fi
 
   if (( !no_state )); then
     [[ -f "$HOME/.claude.json" ]] || touch "$HOME/.claude.json"
@@ -96,7 +111,11 @@ ai() {
       $runtime start "$container" && $runtime exec -it "$container" tmux attach
     else
       echo "Starting $container mounting: ${dirs[*]} ($runtime)"
-      $runtime run -dit --name "$container" "${userns_flags[@]}" "${gpu_flags[@]}" "${security_flags[@]}" "${volumes[@]}" docker-ai bash -c "exec tmux"
+      $runtime run -dit --name "$container" \
+        "${userns_flags[@]}" "${gpu_flags[@]}" "${security_flags[@]}" \
+        "${volumes[@]}" \
+        "${env_flags[@]}" \
+        docker-ai bash -c "exec tmux"
       sleep 0.5
       $runtime exec -it "$container" tmux attach
     fi
