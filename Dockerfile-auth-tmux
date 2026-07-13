@@ -1,0 +1,135 @@
+# isolated ai environments for Apple container
+#
+# OBS: batman får sudo-rettigheter med dette oppsettet
+#
+# usage:
+#   container build -t docker-ai . --no-cache
+FROM ubuntu:24.04
+
+# no prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# upgrade and install
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    btop \
+    make \
+    gcc \
+    fd-find \
+    tree-sitter-cli \
+    xclip \
+    less \
+    git \
+    openssh-client \
+    zsh \
+    iptables \
+    ipset \
+    iproute2 \
+    dnsutils \
+    gnupg2 \
+    sudo \
+    curl \
+    git \
+    gpg \
+    jq \
+    neovim \
+    ripgrep \
+    tmux \
+    tree \
+    unzip \
+    vim \
+    wget \
+    ca-certificates \
+    openjdk-17-jdk \
+    openjdk-21-jdk \
+    python3 python3-pip python3-venv \
+    locales \
+    && locale-gen nb_NO.UTF-8 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the default editor and visual
+# c-x e in opencode
+ENV EDITOR=nvim
+ENV VISUAL=nvim
+ENV GIT_EDITOR=nvim
+
+# Set the default shell to zsh rather than sh
+ENV SHELL=/bin/zsh
+
+# Miljø-variabel som brukes av entrypoint
+ENV OPENCODE_AUTH_TOKEN=""
+ENV GITHUB_TOKEN=""
+
+# java
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+# norsk
+ENV LANG=nb_NO.UTF-8
+ENV LANGUAGE=nb_NO:nb
+ENV LC_ALL=nb_NO.UTF-8
+
+# tmux, and markdown rendering in opencode
+ENV TERM=xterm-256color
+ENV COLORTERM=truecolor
+
+# Copy the custom entrypoint script
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Grant execution permissions to the script
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# non root user
+# RUN userdel -r ubuntu \
+#     && useradd --uid 1000 --create-home --shell /bin/bash batman \
+#     && groupadd -r render \
+#     && usermod -aG video,render batman
+
+# Opprett en ikke-root-bruker, kalt "batman"
+RUN useradd --create-home --shell /bin/bash batman
+
+# Legg til batman i sudo-gruppen og disable passord-prompts
+RUN usermod -aG sudo batman && \
+    echo "batman ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Legg til .local/bin på path
+ENV PATH="/home/batman/.local/bin:$PATH"
+
+# Bytt til "batman" og endre arbeidsmappen til hjem-mappen
+USER batman
+WORKDIR /home/batman
+
+# batman ownership of folders we later mount using -v
+RUN mkdir -p /home/batman/.local/state && \
+    mkdir -p /home/batman/.local/share/opencode && \
+    mkdir -p /home/batman/.config && \
+    mkdir -p /home/batman/.config/opencode
+
+# dotfiles
+RUN git clone https://github.com/vegardga/dotfiles && \
+    chmod u+x dotfiles/setup && \
+    cd dotfiles && \
+    ./setup && \
+    cd ..
+
+# nvim
+RUN git clone https://github.com/nvim-lua/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
+
+# Copy config file
+COPY auth.json /home/batman/.local/share/opencode/auth.json
+COPY gitconfig-ai /home/batman/.gitconfig
+
+# ai
+RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh" | bash \
+ && export NVM_DIR=/home/batman/.nvm \
+ && . "$NVM_DIR/nvm.sh" \
+ && nvm install 24 \
+ && nvm alias default 24 \
+ # && curl -fsSL https://bun.com/install | bash \
+ && curl -fsSL https://opencode.ai/install | bash
+
+# Set the entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# Default oppstartskommando
+CMD ["/bin/bash"]
