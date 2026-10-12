@@ -15,11 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make \
     gcc \
     fd-find \
-    tree-sitter-cli \
     xclip \
     less \
     git \
     openssh-client \
+    build-essential \
     zsh \
     iptables \
     ipset \
@@ -31,7 +31,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     gpg \
     jq \
-    neovim \
     ripgrep \
     tmux \
     tree \
@@ -103,7 +102,8 @@ WORKDIR /home/batman
 RUN mkdir -p /home/batman/.local/state && \
     mkdir -p /home/batman/.local/share/opencode && \
     mkdir -p /home/batman/.config && \
-    mkdir -p /home/batman/.config/opencode
+    mkdir -p /home/batman/.config/opencode && \
+    mkdir -p /home/batman/.local/bin
 
 # dotfiles
 RUN git clone https://github.com/vegardga/dotfiles && \
@@ -112,12 +112,29 @@ RUN git clone https://github.com/vegardga/dotfiles && \
     ./setup && \
     cd ..
 
-# nvim
-RUN git clone https://github.com/nvim-lua/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
-
 # Copy config file
 COPY auth.json /home/batman/.local/share/opencode/auth.json
 COPY gitconfig-ai /home/batman/.gitconfig
+
+# Download and install the latest Neovim release
+RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz \
+    && tar -C /home/batman/.local/bin -xzf nvim-linux-arm64.tar.gz \
+    && rm nvim-linux-arm64.tar.gz
+
+# Add Neovim to the system PATH
+ENV PATH="/home/batman/.local/bin/nvim-linux-arm64/bin:$PATH"
+
+# Download and install the latest tree-sitter-cli
+RUN curl -LO https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.11/tree-sitter-linux-arm64.gz \
+    && gunzip -c tree-sitter-linux-arm64.gz > /home/batman/.local/bin/tree-sitter \
+    && rm tree-sitter-linux-arm64.gz \
+    && chmod +x /home/batman/.local/bin/tree-sitter
+
+# kickstart-nvim
+RUN git clone https://github.com/nvim-lua/kickstart.nvim.git "/home/batman/.config/nvim"
+
+# PREINSTALL PLUGINS: Run headless sync using native vim.pack
+RUN nvim --headless -c "packupdate" -c "qa"
 
 # ai
 RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh" | bash \
