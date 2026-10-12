@@ -134,16 +134,14 @@ RUN curl -LO https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.
 RUN git clone https://github.com/nvim-lua/kickstart.nvim.git "/home/batman/.config/nvim"
 
 # PREINSTALL PLUGINS: Run headless sync using native vim.pack
-RUN nvim --headless -c "packupdate" -c "qa"
+RUN nvim --headless -c "lua vim.pack.add()" -c "qa"
+
+# Run the mise installer and configure the target path
+RUN curl -fsSL https://mise.run | MISE_INSTALL_PATH=/home/batman/.local/bin/mise sh
 
 # ai
-RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh" | bash \
- && export NVM_DIR=/home/batman/.nvm \
- && . "$NVM_DIR/nvm.sh" \
- && nvm install 24 \
- && nvm alias default 24 \
+RUN curl -fsSL https://opencode.ai/install | bash
  # && curl -fsSL https://bun.com/install | bash \
- && curl -fsSL https://opencode.ai/install | bash
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
