@@ -146,6 +146,7 @@ RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh"
  && nvm install 24 \
  && nvm alias default 24
 RUN curl -fsSL https://opencode.ai/install | bash
+# RUN curl -fsSL https://opencode.ai/v2/install | bash
  # && curl -fsSL https://bun.com/install | bash \
 
 # Set the entrypoint
