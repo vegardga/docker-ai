@@ -140,6 +140,11 @@ RUN nvim --headless -c "lua vim.pack.add()" -c "qa"
 RUN curl -fsSL https://mise.run | MISE_INSTALL_PATH=/home/batman/.local/bin/mise sh
 
 # ai
+RUN curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh" | bash \
+ && export NVM_DIR=/home/batman/.nvm \
+ && . "$NVM_DIR/nvm.sh" \
+ && nvm install 24 \
+ && nvm alias default 24
 RUN curl -fsSL https://opencode.ai/install | bash
  # && curl -fsSL https://bun.com/install | bash \
 
